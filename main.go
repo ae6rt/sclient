@@ -123,6 +123,7 @@ func main() {
 				fmt.Printf("Cannot read trust store: %v\n", err)
 				os.Exit(1)
 			}
+			caCerts = x509.NewCertPool()
 			caCerts.AppendCertsFromPEM(data)
 		} else {
 			caCerts, err = x509.SystemCertPool()
