@@ -27,17 +27,16 @@ func main() {
 
 	switch cstate.Version {
 	case tls.VersionTLS12:
-		fmt.Print("TLS1.2")
+		fmt.Print("TLS1.2/")
 	case tls.VersionTLS11:
-		fmt.Print("TLS1.1")
+		fmt.Print("TLS1.1/")
 	case tls.VersionTLS10:
-		fmt.Print("TLS1.0")
+		fmt.Print("TLS1.0/")
 	case tls.VersionSSL30:
-		fmt.Print("SSL3.0")
+		fmt.Print("SSL3.0/")
 	default:
 		panic("what tls version?")
 	}
-	fmt.Print("/")
 
 	switch cstate.CipherSuite {
 	case tls.TLS_RSA_WITH_RC4_128_SHA:
@@ -88,17 +87,18 @@ func main() {
 		log.Fatal("unknown ciphersuite")
 	}
 
-	fmt.Println()
-
 	for k, v := range cstate.PeerCertificates {
-		fmt.Printf("Certificate[%d]\n", k)
+		fmt.Printf("\nCertificate[%d]\n", k)
 		fmt.Printf("Subject:\t%s\n", v.Subject.CommonName)
 		fmt.Printf("Issuer:\t\t%s\n", v.Issuer.CommonName)
 		fmt.Printf("Expires:\t%s\n", v.NotAfter.String())
-		fmt.Printf("DNS Names:\t%+v\n", v.DNSNames)
-		fmt.Printf("IP Addresses:\t%+v\n", v.IPAddresses)
+		if len(v.DNSNames) > 0 {
+			fmt.Printf("DNS Names:\t%+v\n", v.DNSNames)
+		}
+		if len(v.IPAddresses) > 0 {
+			fmt.Printf("IP Addresses:\t%+v\n", v.IPAddresses)
+		}
 		fmt.Printf("SubjectKeyID:\t%s\n", strings.ToUpper(hex.EncodeToString(v.SubjectKeyId)))
 		fmt.Printf("AuthorityKeyID:\t%s\n", strings.ToUpper(hex.EncodeToString(v.AuthorityKeyId)))
-		fmt.Println()
 	}
 }
