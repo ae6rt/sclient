@@ -115,7 +115,7 @@ func main() {
 
 	// Validate peer certificate chain
 	{
-		var caCerts *x509.CertPool
+		var roots *x509.CertPool
 		var err error
 		if *trustAnchors != "" {
 			data, err := ioutil.ReadFile(*trustAnchors)
@@ -123,23 +123,23 @@ func main() {
 				fmt.Printf("Cannot read trust store: %v\n", err)
 				os.Exit(1)
 			}
-			caCerts = x509.NewCertPool()
-			caCerts.AppendCertsFromPEM(data)
+			roots = x509.NewCertPool()
+			roots.AppendCertsFromPEM(data)
 		} else {
-			caCerts, err = x509.SystemCertPool()
+			roots, err = x509.SystemCertPool()
 			if err != nil {
 				fmt.Println("Cannot read system certs")
 				os.Exit(1)
 			}
 		}
 
-		ints := x509.NewCertPool()
+		intermediates := x509.NewCertPool()
 		for _, v := range cstate.PeerCertificates[1:] {
-			ints.AddCert(v)
+			intermediates.AddCert(v)
 		}
 		opts := x509.VerifyOptions{
-			Roots:         caCerts,
-			Intermediates: ints,
+			Roots:         roots,
+			Intermediates: intermediates,
 		}
 
 		if _, err := cstate.PeerCertificates[0].Verify(opts); err != nil {
