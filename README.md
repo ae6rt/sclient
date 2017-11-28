@@ -14,9 +14,11 @@ $ go get -u github.com/ae6rt/sclient
 $ sclient -h
 Usage of sclient:
   -host string
-    	host:port pair (default "localhost:443")
+    	host:port pair (default "localhost:443").
   -roots string
     	File containing trust anchors in PEM format.  Defaults to system roots.
+  -verbose
+    	Verbose reporting.
 ```
 
 For example

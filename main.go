@@ -14,6 +14,8 @@ import (
 func main() {
 	host := flag.String("host", "localhost:443", "host:port pair")
 	trustAnchors := flag.String("roots", "", "File containing trust anchors in PEM format.  Defaults to system roots.")
+	verbose := flag.Bool("verbose", false, "Verbose.")
+
 	flag.Parse()
 
 	var cstate tls.ConnectionState
@@ -145,7 +147,8 @@ func main() {
 			Intermediates: intermediates,
 		}
 
-		if _, err := cstate.PeerCertificates[0].Verify(opts); err != nil {
+		chain, err := cstate.PeerCertificates[0].Verify(opts)
+		if err != nil {
 			switch err.(type) {
 			case x509.HostnameError:
 				fmt.Printf("hostname validation would have failed: %v\n", err)
@@ -153,6 +156,17 @@ func main() {
 				fmt.Printf("certificate path validation would have failed: %v (%T)\n", err, err)
 			default:
 				fmt.Printf("Validation failure: %v (%T)\n", err, err)
+			}
+		} else {
+			if *verbose {
+				for k, v := range chain {
+					fmt.Printf("\nVerification chain %d\n", k)
+					for _, j := range v {
+						fmt.Printf("\tSubject: %s\n", j.Subject.CommonName)
+						fmt.Printf("\tSubjectKeyID: %s\n", strings.ToUpper(hex.EncodeToString(j.SubjectKeyId)))
+						fmt.Printf("\tAuthorityKeyID: %s\n\n", strings.ToUpper(hex.EncodeToString(j.AuthorityKeyId)))
+					}
+				}
 			}
 		}
 	}
