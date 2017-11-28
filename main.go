@@ -4,19 +4,20 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/hex"
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 )
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Printf("Usage: %s <host:port>\n", os.Args[0])
-		os.Exit(-1)
-	}
+	host := flag.String("host", "localhost:443", "host:port pair")
+	trustAnchors := flag.String("roots", "", "File containing trust anchors in PEM format.  Defaults to system roots.")
+	flag.Parse()
 
-	conn, err := tls.Dial("tcp", os.Args[1], &tls.Config{
+	conn, err := tls.Dial("tcp", *host, &tls.Config{
 		InsecureSkipVerify: true,
 	})
 	if err != nil {
@@ -101,13 +102,29 @@ func main() {
 
 	// Validate peer certificate chain
 	{
-		roots, _ := x509.SystemCertPool()
+		var caCerts *x509.CertPool
+		var err error
+		if *trustAnchors != "" {
+			data, err := ioutil.ReadFile(*trustAnchors)
+			if err != nil {
+				fmt.Printf("Cannot read trust store: %v\n", err)
+				os.Exit(1)
+			}
+			caCerts.AppendCertsFromPEM(data)
+		} else {
+			caCerts, err = x509.SystemCertPool()
+			if err != nil {
+				fmt.Println("Cannot read system certs")
+				os.Exit(1)
+			}
+		}
+
 		ints := x509.NewCertPool()
 		for _, v := range cstate.PeerCertificates[1:] {
 			ints.AddCert(v)
 		}
 		opts := x509.VerifyOptions{
-			Roots:         roots,
+			Roots:         caCerts,
 			Intermediates: ints,
 		}
 
