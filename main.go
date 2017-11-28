@@ -99,7 +99,7 @@ func main() {
 		}
 	}
 
-	// Print peer cert chain
+	// Print peer certificate chain
 	{
 		for k, v := range cstate.PeerCertificates {
 			fmt.Printf("\nCertificate[%d]\n", k)
