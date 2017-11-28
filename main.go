@@ -115,6 +115,7 @@ func main() {
 
 	// Validate peer certificate chain
 	{
+		// Develop root certpool
 		var roots *x509.CertPool
 		var err error
 		if *trustAnchors != "" {
@@ -133,17 +134,26 @@ func main() {
 			}
 		}
 
+		// Develop intermediate certpool
 		intermediates := x509.NewCertPool()
 		for _, v := range cstate.PeerCertificates[1:] {
 			intermediates.AddCert(v)
 		}
 		opts := x509.VerifyOptions{
+			DNSName:       strings.Split(*host, ":")[0],
 			Roots:         roots,
 			Intermediates: intermediates,
 		}
 
 		if _, err := cstate.PeerCertificates[0].Verify(opts); err != nil {
-			fmt.Printf("Insufficient trust material to validate peer certificate chain: %v\n", err)
+			switch err.(type) {
+			case x509.HostnameError:
+				fmt.Printf("hostname validation would have failed: %v\n", err)
+			case x509.UnknownAuthorityError:
+				fmt.Printf("certificate path validation would have failed: %v (%T)\n", err, err)
+			default:
+				fmt.Printf("Validation failure: %v (%T)\n", err, err)
+			}
 		}
 	}
 }
