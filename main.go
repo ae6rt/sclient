@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/hex"
 	"fmt"
 	"log"
@@ -35,7 +36,7 @@ func main() {
 	case tls.VersionSSL30:
 		fmt.Print("SSL3.0/")
 	default:
-		panic("what tls version?")
+		log.Fatalf("unsupported TLS version: %d\n", cstate.Version)
 	}
 
 	switch cstate.CipherSuite {
@@ -84,7 +85,7 @@ func main() {
 	case tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305:
 		fmt.Println("TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305")
 	default:
-		log.Fatal("unknown ciphersuite")
+		log.Fatalf("unknown ciphersuite: %d\n", cstate.CipherSuite)
 	}
 
 	for k, v := range cstate.PeerCertificates {
@@ -92,13 +93,26 @@ func main() {
 		fmt.Printf("Subject:\t%s\n", v.Subject.CommonName)
 		fmt.Printf("Issuer:\t\t%s\n", v.Issuer.CommonName)
 		fmt.Printf("Expires:\t%s\n", v.NotAfter.String())
-		if len(v.DNSNames) > 0 {
-			fmt.Printf("DNS Names:\t%+v\n", v.DNSNames)
-		}
-		if len(v.IPAddresses) > 0 {
-			fmt.Printf("IP Addresses:\t%+v\n", v.IPAddresses)
-		}
+		fmt.Printf("DNS Names:\t%+v\n", v.DNSNames)
+		fmt.Printf("IP Addresses:\t%+v\n", v.IPAddresses)
 		fmt.Printf("SubjectKeyID:\t%s\n", strings.ToUpper(hex.EncodeToString(v.SubjectKeyId)))
 		fmt.Printf("AuthorityKeyID:\t%s\n", strings.ToUpper(hex.EncodeToString(v.AuthorityKeyId)))
+	}
+
+	// Validate peer certificate chain
+	{
+		roots, _ := x509.SystemCertPool()
+		ints := x509.NewCertPool()
+		for _, v := range cstate.PeerCertificates[1:] {
+			ints.AddCert(v)
+		}
+		opts := x509.VerifyOptions{
+			Roots:         roots,
+			Intermediates: ints,
+		}
+
+		if _, err := cstate.PeerCertificates[0].Verify(opts); err != nil {
+			fmt.Printf("Insufficient trust material to validate peer certificate chain: %v\n", err)
+		}
 	}
 }
