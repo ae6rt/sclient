@@ -22,7 +22,7 @@ Usage of sclient:
 For example
 
 ```bash
-$ sclient www.google.com:443
+$ sclient -host www.google.com:443
 TLS1.2/TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
 
 Certificate[0]

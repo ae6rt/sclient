@@ -7,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 )
@@ -25,7 +24,8 @@ func main() {
 			InsecureSkipVerify: true,
 		})
 		if err != nil {
-			log.Fatalf("failed to connect: %v\n", err.Error())
+			fmt.Printf("failed to connect: %v\n", err.Error())
+			os.Exit(1)
 		}
 
 		cstate = conn.ConnectionState()
@@ -44,7 +44,8 @@ func main() {
 		case tls.VersionSSL30:
 			fmt.Print("SSL3.0/")
 		default:
-			log.Fatalf("unsupported TLS version: %d\n", cstate.Version)
+			fmt.Printf("unsupported TLS version: %d\n", cstate.Version)
+			os.Exit(1)
 		}
 
 		switch cstate.CipherSuite {
@@ -93,7 +94,8 @@ func main() {
 		case tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305:
 			fmt.Println("TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305")
 		default:
-			log.Fatalf("unknown ciphersuite: %d\n", cstate.CipherSuite)
+			fmt.Printf("unknown ciphersuite: %d\n", cstate.CipherSuite)
+			os.Exit(1)
 		}
 	}
 
