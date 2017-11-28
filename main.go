@@ -87,13 +87,16 @@ func main() {
 
 	fmt.Println()
 
-	for _, v := range cstate.PeerCertificates {
-		fmt.Printf("Subject: %s\n", v.Subject.CommonName)
-		fmt.Printf("Issuer: %s\n", v.Issuer.CommonName)
-		fmt.Printf("SubjectKeyID: %s\n", strings.ToUpper(hex.EncodeToString(v.SubjectKeyId)))
-		fmt.Printf("AuthorityKeyID: %s\n", strings.ToUpper(hex.EncodeToString(v.AuthorityKeyId)))
-		fmt.Printf("DNS Names: %+v\n", v.DNSNames)
-		fmt.Printf("IP Addresses: %+v\n", v.IPAddresses)
+	for k, v := range cstate.PeerCertificates {
+		fmt.Printf("Certificate[%d]\n", k)
+		fmt.Printf("Subject:\t%s\n", v.Subject.CommonName)
+		fmt.Printf("Issuer:\t\t%s\n", v.Issuer.CommonName)
+		fmt.Printf("Expires:\t%s\n", v.NotAfter.String())
+		fmt.Printf("DNS Names:\t%+v\n", v.DNSNames)
+		fmt.Printf("IP Addresses:\t%+v\n", v.IPAddresses)
+		fmt.Printf("SubjectKeyID:\t%s\n", strings.ToUpper(hex.EncodeToString(v.SubjectKeyId)))
+		fmt.Printf("AuthorityKeyID:\t%s\n", strings.ToUpper(hex.EncodeToString(v.AuthorityKeyId)))
+
 		fmt.Println()
 	}
 }
