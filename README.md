@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/ae6rt/sclient.svg?branch=master)](https://travis-ci.com/ae6rt/sclient)
+
 # sclient
 
 Partial implementation of *openssl s_client* in Go.  sclient prints useful information about the peer connection.
