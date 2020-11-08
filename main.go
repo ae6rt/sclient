@@ -36,7 +36,9 @@ func main() {
 
 	// Print negotiated TLS version and ciphersuite.
 	{
-		switch cstate.Version {
+		switch int(cstate.Version) {
+		case tls.VersionTLS13:
+			fmt.Print("TLS1.3/")
 		case tls.VersionTLS12:
 			fmt.Print("TLS1.2/")
 		case tls.VersionTLS11:
@@ -51,6 +53,14 @@ func main() {
 		}
 
 		switch cstate.CipherSuite {
+		// TLS 1.3 cipher suites.
+		case tls.TLS_AES_128_GCM_SHA256:
+			fmt.Print("TLS_AES_128_GCM_SHA256")
+		case tls.TLS_AES_256_GCM_SHA384:
+			fmt.Print("TLS_AES_256_GCM_SHA384")
+		case tls.TLS_CHACHA20_POLY1305_SHA256:
+			fmt.Print("TLS_CHACHA20_POLY1305_SHA256")
+		// TLS 1.0 - 1.2 cipher suites.
 		case tls.TLS_RSA_WITH_RC4_128_SHA:
 			fmt.Println("TLS_RSA_WITH_RC4_128_SHA")
 		case tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA:
@@ -95,8 +105,10 @@ func main() {
 			fmt.Println("TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305")
 		case tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305:
 			fmt.Println("TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305")
+
 		default:
-			fmt.Printf("unknown ciphersuite: %d\n", cstate.CipherSuite)
+			fmt.Printf("%x\n", tls.TLS_AES_256_GCM_SHA384)
+			fmt.Printf("unknown ciphersuite: %x\n", cstate.CipherSuite)
 			os.Exit(1)
 		}
 	}
